@@ -1,0 +1,17 @@
+{
+  "name": "english-literature",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "英語で文学 — 英語読書記録をMarkdownから生成する静的サイト",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "markdown-it": "14.3.0"
+  }
+}

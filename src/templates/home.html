@@ -1,0 +1,42 @@
+<header class="site-hero shell">
+  <p class="eyebrow">English reading journal</p>
+  <h1>英語で文学</h1>
+  <p class="site-intro">文学作品を原文で、少しずつ。<br>わからなかった単語や構文、自分なりの訳を記録しています。<br>どんな小説も読みこなせる英語力を目指して。</p>
+</header>
+
+<main id="main-content" class="shell main-stack">
+  <section class="home-section" aria-labelledby="reading-now-title">
+    <div class="section-heading">
+      <p class="section-kicker">Reading now</p>
+      <h2 id="reading-now-title">今読んでいる作品</h2>
+    </div>
+    <div class="work-grid">{{currentWorks}}</div>
+  </section>
+
+  <section class="home-section recent-section" aria-labelledby="recent-title">
+    <div class="section-heading section-heading--row">
+      <div>
+        <p class="section-kicker">Recent notes</p>
+        <h2 id="recent-title">最近の英語読書記録</h2>
+      </div>
+      <p class="section-note">更新の新しい順に{{recentCount}}件まで表示します。</p>
+    </div>
+    {{recentRecords}}
+  </section>
+
+  <section class="home-section" aria-labelledby="works-title">
+    <div class="section-heading">
+      <p class="section-kicker">Works</p>
+      <h2 id="works-title">作品一覧</h2>
+    </div>
+    <div class="work-grid">{{allWorks}}</div>
+  </section>
+
+  <section class="about-card" aria-labelledby="about-title">
+    <p class="section-kicker">About</p>
+    <h2 id="about-title">このサイトについて</h2>
+    <p>文学評論ではなく、文学作品を英語で読むための個人的な学習記録です。日々の読書で立ち止まった単語や構文、自分なりの訳、感じたことを、そのまま積み重ねていきます。</p>
+  </section>
+</main>
+
+{{footer}}

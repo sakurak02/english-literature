@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{description}}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:site_name" content="英語で文学">
+  <meta property="og:title" content="{{pageTitle}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:url" content="{{canonicalUrl}}">
+  <title>{{pageTitle}}</title>
+  <link rel="canonical" href="{{canonicalUrl}}">
+  <link rel="stylesheet" href="{{assetPrefix}}assets/styles.css">
+  <script src="{{assetPrefix}}assets/image-viewer.js" defer></script>
+</head>
+<body class="{{bodyClass}}">
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  {{content}}
+  <dialog class="image-dialog" data-image-dialog aria-label="画像の拡大表示">
+    <button class="image-dialog__close" type="button" data-image-close aria-label="拡大表示を閉じる">閉じる</button>
+    <img data-image-dialog-content src="" alt="">
+  </dialog>
+</body>
+</html>
