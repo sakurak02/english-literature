@@ -219,6 +219,32 @@ summary:focus-visible {
   font-size: 0.9rem;
 }
 
+.work-card__collection {
+  display: flex;
+  gap: 0.7em;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.86rem;
+}
+
+.work-card__collection span {
+  color: var(--accent);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.work-card__introduction {
+  margin: 20px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: #514b44;
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
 .work-card__meta {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
@@ -587,6 +613,55 @@ summary:focus-visible {
 .prose mark {
   padding: 0 0.12em;
   background: #f3df9b;
+}
+
+.source-text {
+  margin: 1.1em 0 2.2em;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #faf7f1;
+}
+
+.source-text summary {
+  padding: 15px 18px;
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.source-text summary::marker {
+  color: var(--accent);
+}
+
+.source-text[open] summary {
+  border-bottom: 1px solid var(--line);
+  background: #f4ecdf;
+}
+
+.source-text__body {
+  width: min(100%, 68ch);
+  margin-inline: auto;
+  padding: clamp(20px, 5vw, 34px);
+  color: #39342e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.source-text__body > :first-child {
+  margin-top: 0;
+}
+
+.source-text__body > :last-child {
+  margin-bottom: 0;
+}
+
+.source-text__body p {
+  margin: 0 0 1.35em;
 }
 
 .record-image-link {

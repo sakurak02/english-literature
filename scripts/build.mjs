@@ -8,7 +8,7 @@ import MarkdownIt from "markdown-it";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SCRIPT_DIR, "..");
 const OUTPUT_DIR = path.join(ROOT, "dist");
-const DEFAULT_SECTION_TITLES = new Set(["今日読んだところ", "英文を考える", "感じたこと"]);
+const DEFAULT_SECTION_TITLES = new Set(["今日読んだところ", "英文を考える", "今日の単語・言い回し", "感じたこと"]);
 
 const site = await readJson(path.join(ROOT, "site.config.json"));
 validateSiteConfig(site);
@@ -56,7 +56,14 @@ await writeFile(path.join(OUTPUT_DIR, ".nojekyll"), "", "utf8");
 
 const works = await loadWorks();
 const records = await loadRecords(works);
+const publishedWorks = works.filter((work) => work.published !== false);
+const publishedWorkIds = new Set(publishedWorks.map((work) => work.id));
+const publishedRecords = records.filter((record) => publishedWorkIds.has(record.workId));
 const pages = [];
+
+if (publishedWorks.length === 0) {
+  throw new Error("公開対象の作品がありません。work.json の published を確認してください。");
+}
 
 for (const work of works) {
   work.records = records
@@ -67,7 +74,7 @@ for (const work of works) {
 }
 
 await buildHome();
-for (const work of works) {
+for (const work of publishedWorks) {
   await buildWorkPage(work);
   await buildGuidePage(work);
   await buildRecordPages(work);
@@ -76,8 +83,8 @@ await buildSitemap();
 await buildRobots();
 await validateGeneratedLinks();
 
-const recordLabel = records.length === 1 ? "record" : "records";
-console.log(`Built ${pages.length} HTML pages and ${records.length} ${recordLabel} in dist/.`);
+const recordLabel = publishedRecords.length === 1 ? "record" : "records";
+console.log(`Built ${pages.length} HTML pages and ${publishedRecords.length} ${recordLabel} in dist/.`);
 
 async function readJson(filePath) {
   try {
@@ -114,7 +121,7 @@ async function loadWorks() {
 
     const workDir = path.join(worksDir, entry.name);
     const data = await readJson(path.join(workDir, "work.json"));
-    const required = ["id", "title", "originalTitle", "author", "authorJa", "translator", "status", "recordTitlePrefix", "introduction", "gutenbergUrl"];
+    const required = ["id", "title", "originalTitle", "author", "authorJa", "status", "recordTitlePrefix", "introduction", "gutenbergUrl"];
     for (const key of required) {
       if (!data[key] || typeof data[key] !== "string") {
         throw new Error(`works/${entry.name}/work.json の ${key} が未設定です。`);
@@ -126,14 +133,25 @@ async function loadWorks() {
     if (!["読書中", "読了"].includes(data.status)) {
       throw new Error(`作品「${data.title}」の status は「読書中」または「読了」にしてください。`);
     }
+    if (data.published !== undefined && typeof data.published !== "boolean") {
+      throw new Error(`作品「${data.title}」の published は true または false にしてください。`);
+    }
 
     const guidePath = path.join(workDir, "guide.html");
     if (!existsSync(guidePath)) {
       throw new Error(`works/${entry.name}/guide.html がありません。`);
     }
 
+    const byline = data.byline
+      ?? (data.translator ? `${data.author}　英訳：${data.translator}` : data.author);
+    const guideByline = data.guideByline ?? data.authorJa;
+    const guideTags = Array.isArray(data.guideTags) ? data.guideTags : [];
+
     loaded.push({
       ...data,
+      byline,
+      guideByline,
+      guideTags,
       guidePath,
       metadataUpdatedAt: gitLastCommit(path.relative(ROOT, path.join(workDir, "work.json"))),
       guideUpdatedAt: gitLastCommit(path.relative(ROOT, guidePath)),
@@ -195,7 +213,7 @@ async function loadRecords(registeredWorks) {
         number: entry.name,
         recordDir,
         markdownPath,
-        html: markdown.render(cleanedSource),
+        html: renderRecordMarkdown(cleanedSource),
         updatedAt,
         title: `${work.recordTitlePrefix} ${entry.name}`,
       });
@@ -258,6 +276,28 @@ function stripEmptyDefaultSections(source) {
   return output.join("\n").trim();
 }
 
+function renderRecordMarkdown(source) {
+  const sourceBlocks = [];
+  const preparedSource = source.replace(
+    /<details\s+class=(['"])source-text\1\s*>\s*<summary>\s*今日読む原文を開く\s*<\/summary>([\s\S]*?)<\/details>/gi,
+    (match, quote, body) => {
+      const index = sourceBlocks.length;
+      const bodyHtml = markdown.render(body.trim());
+      sourceBlocks.push(`<details class="source-text">
+<summary>今日読む原文を開く</summary>
+<div class="source-text__body" lang="en">${bodyHtml}</div>
+</details>`);
+      return `\n<!--SOURCE_TEXT_${index}-->\n`;
+    },
+  );
+
+  let html = markdown.render(preparedSource);
+  for (let index = 0; index < sourceBlocks.length; index += 1) {
+    html = html.replace(`<!--SOURCE_TEXT_${index}-->`, sourceBlocks[index]);
+  }
+  return html;
+}
+
 function gitLastCommit(relativePath) {
   try {
     const result = execFileSync(
@@ -275,23 +315,23 @@ function gitLastCommit(relativePath) {
 }
 
 async function buildHome() {
-  const currentWorks = works.filter((work) => work.status === "読書中");
-  const recentRecords = [...records]
+  const currentWorks = publishedWorks.filter((work) => work.status === "読書中");
+  const recentRecords = [...publishedRecords]
     .sort(compareRecordsByUpdate)
     .slice(0, site.recentCount);
 
   const homeContent = renderTemplate(templates.home, {
     currentWorks: currentWorks.length > 0
-      ? currentWorks.map((work, index) => renderWorkCard(work, index + 1)).join("\n")
+      ? currentWorks.map((work, index) => renderWorkCard(work, index + 1, { detailed: true })).join("\n")
       : '<p class="empty-state">現在読んでいる作品はありません。</p>',
     recentCount: String(site.recentCount),
     recentRecords: renderRecordList(recentRecords, { includeWork: true, fromRoot: true }),
-    allWorks: works.map((work, index) => renderWorkCard(work, index + 1)).join("\n"),
+    allWorks: publishedWorks.map((work, index) => renderWorkCard(work, index + 1)).join("\n"),
     footer: renderFooter(),
   });
   const latestContentDate = newestDate([
-    ...records.map((record) => record.updatedAt),
-    ...works.map((work) => work.metadataUpdatedAt),
+    ...publishedRecords.map((record) => record.updatedAt),
+    ...publishedWorks.map((work) => work.metadataUpdatedAt),
   ]);
 
   await addHtmlPage("", renderBase({
@@ -303,12 +343,16 @@ async function buildHome() {
   }), latestContentDate);
 }
 
-function renderWorkCard(work, index) {
+function renderWorkCard(work, index, { detailed = false } = {}) {
+  const details = detailed
+    ? `${work.collection ? `<p class="work-card__collection"><span>収録</span>${escapeHtml(work.collection)}</p>` : ""}<p class="work-card__introduction">${escapeHtml(work.introduction)}</p>`
+    : "";
   return `<article class="work-card">
   <div class="work-card__topline"><span class="status-badge">${escapeHtml(work.status)}</span><span class="work-card__number">${String(index).padStart(2, "0")}</span></div>
   <h3>${escapeHtml(work.title)}</h3>
   <p class="work-card__original">${escapeHtml(work.originalTitle)}</p>
-  <p class="work-card__author">${escapeHtml(work.author)}</p>
+  <p class="work-card__author">${escapeHtml(work.byline)}</p>
+  ${details}
   <dl class="work-card__meta">
     <div><dt>英語読書記録</dt><dd>${work.recordCount}件</dd></div>
     <div><dt>最終更新日</dt><dd>${formatDateOrEmpty(work.lastUpdated)}</dd></div>
@@ -327,8 +371,7 @@ async function buildWorkPage(work) {
     homeHref: "../../",
     workTitle: escapeHtml(work.title),
     originalTitle: escapeHtml(work.originalTitle),
-    author: escapeHtml(work.author),
-    translator: escapeHtml(work.translator),
+    byline: escapeHtml(work.byline),
     status: escapeHtml(work.status),
     recordCount: String(work.recordCount),
     lastUpdated: formatDateOrEmpty(work.lastUpdated),
@@ -357,8 +400,8 @@ async function buildGuidePage(work) {
     workHref: "../",
     workTitle: escapeHtml(work.title),
     originalTitle: escapeHtml(work.originalTitle),
-    authorJa: escapeHtml(work.authorJa),
-    translator: escapeHtml(work.translator),
+    guideByline: escapeHtml(work.guideByline),
+    guideTags: work.guideTags.map((tag) => `<li>${escapeHtml(tag)}</li>`).join(""),
     guideContent,
     footer: renderFooter(),
   });
