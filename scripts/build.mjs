@@ -53,6 +53,10 @@ await rm(OUTPUT_DIR, { recursive: true, force: true });
 await mkdir(OUTPUT_DIR, { recursive: true });
 await cp(path.join(ROOT, "src", "assets"), path.join(OUTPUT_DIR, "assets"), { recursive: true });
 await writeFile(path.join(OUTPUT_DIR, ".nojekyll"), "", "utf8");
+await cp(
+  path.join(ROOT, "google296662f7c3e82eca.html"),
+  path.join(OUTPUT_DIR, "google296662f7c3e82eca.html"),
+);
 
 const works = await loadWorks();
 const records = await loadRecords(works);
