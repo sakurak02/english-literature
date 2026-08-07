@@ -806,59 +806,6 @@ summary:focus-visible {
   font-size: 0.9rem;
 }
 
-.timeline {
-  margin: 18px 0 0 7px;
-  padding-left: 24px;
-  border-left: 2px solid #c9b290;
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.timeline-item::before {
-  position: absolute;
-  top: 0.7em;
-  left: -30px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  content: "";
-}
-
-.timeline-item strong {
-  color: var(--accent-dark);
-}
-
-.book-block + .book-block {
-  margin-top: 28px;
-}
-
-.book-label {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 4px;
-  background: var(--ink);
-  color: #fff;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-}
-
-.chapter-list {
-  columns: 2;
-  column-gap: 36px;
-  padding-left: 22px;
-}
-
-.chapter-list li {
-  break-inside: avoid;
-  margin-bottom: 7px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.9rem;
-}
-
 .source-list li + li {
   margin-top: 8px;
 }
@@ -955,10 +902,6 @@ summary:focus-visible {
 
   .site-header__note {
     display: none;
-  }
-
-  .chapter-list {
-    columns: 1;
   }
 
   .record-navigation {

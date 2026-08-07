@@ -8,11 +8,11 @@
 
 日常的に編集するのは `reading/` 内のMarkdownと画像だけです。
 
-モンテーニュ『エセー』の1件目は、次の構成にします。
+サキ「開いた窓」の1件目は、次の構成にします。
 
 ```text
 reading/
-└── montaigne/
+└── saki-open-window/
     └── 001/
         ├── 001.md
         └── images/
@@ -57,7 +57,7 @@ push後、GitHub Actionsが次の内容を自動生成してGitHub Pagesへ公�
 各読書記録フォルダに対して、次のGit情報を取得します。
 
 ```text
-git log -1 --format=%cI -- reading/montaigne/001
+git log -1 --format=%cI -- reading/saki-open-window/001
 ```
 
 そのため、Markdownだけでなく同じ記録フォルダ内の画像を変更した場合も更新日が変わります。GitHub Actionsでは `.github/workflows/pages.yml` のcheckoutに `fetch-depth: 0` を指定し、履歴を省略せずに取得します。
