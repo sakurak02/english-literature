@@ -16,8 +16,8 @@ reading/
     └── 001/
         ├── 001.md
         └── images/
-            ├── 001-note-01.webp
-            └── 001-note-02.webp
+            ├── 001-01.webp
+            └── 001-02.webp
 ```
 
 Markdownの定型は `_templates/reading-record.md` にあります。新しい記事は、原文全文、日本語訳、注目した一節、添削前後の訳、英文解説、単語・言い回し、英語と文学についての感想という順序で記録します。
@@ -28,8 +28,10 @@ Markdownの定型は `_templates/reading-record.md` にあります。新しい�
 
 Goodnotes画像は必須ではありません。通常の記事では使用せず、将来必要になった場合だけ、WebP形式で記録フォルダ内の `images/` に置いて標準Markdown記法で参照できます。
 
+画像ファイル名は `記事番号-画像番号.webp` の形式に統一します（例：`001-01.webp`、`001-02.webp`、`002-01.webp`）。
+
 ```markdown
-![Goodnotesの書き込み](./images/001-note-01.webp)
+![Goodnotesの書き込み](./images/001-01.webp)
 ```
 
 front matter、ページタイトル、記録番号、日付、URLは書きません。
