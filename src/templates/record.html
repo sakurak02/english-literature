@@ -4,7 +4,10 @@
   <article class="reading-record">
     <header class="record-header">
       <p class="section-kicker">Reading note</p>
-      <h1>{{recordTitle}}</h1>
+      <h1 class="record-title">
+        <span class="record-title__work">{{recordWorkTitle}}</span>
+        <span class="record-title__number">英語読書記録 {{recordNumber}}</span>
+      </h1>
       <p class="record-date"><time datetime="{{dateIso}}">更新日：{{dateDisplay}}</time></p>
     </header>
     <div class="record-body prose">{{recordContent}}</div>

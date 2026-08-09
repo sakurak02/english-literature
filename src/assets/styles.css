@@ -540,7 +540,17 @@ summary:focus-visible {
 }
 
 .record-header h1 {
-  font-size: clamp(1.8rem, 6vw, 2.7rem);
+  font-size: clamp(1.35rem, 6vw, 2.7rem);
+}
+
+.record-title {
+  display: grid;
+  gap: 0.12em;
+}
+
+.record-title__work,
+.record-title__number {
+  white-space: nowrap;
 }
 
 .record-date {
