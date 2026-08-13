@@ -6,18 +6,16 @@
 
 ## 日々の英語読書記録
 
-日常的に編集するのは `reading/` 内のMarkdownと画像だけです。
+日常的に編集するのは `reading/` 内のMarkdownです。
 
-サキ「開いた窓」の1件目は、次の構成にします。
+サキ「開いた窓」の記録は、次の構成にします。
 
 ```text
 reading/
 └── saki-open-window/
-    └── 001/
-        ├── 001.md
-        └── images/
-            ├── 001-01.webp
-            └── 001-02.webp
+    ├── 001.md
+    ├── 002.md
+    └── 003.md
 ```
 
 Markdownの定型は `_templates/reading-record.md` にあります。新しい記事は、原文全文、日本語訳、注目した一節、添削前後の訳、英文解説、単語・言い回し、英語と文学についての感想という順序で記録します。
@@ -26,22 +24,13 @@ Markdownの定型は `_templates/reading-record.md` にあります。新しい�
 
 本文が空の定型見出しは、サイト生成時に表示されません。自由な小見出しも利用できます。
 
-Goodnotes画像は必須ではありません。通常の記事では使用せず、将来必要になった場合だけ、WebP形式で記録フォルダ内の `images/` に置いて標準Markdown記法で参照できます。
-
-画像ファイル名は `記事番号-画像番号.webp` の形式に統一します（例：`001-01.webp`、`001-02.webp`、`002-01.webp`）。
-
-```markdown
-![Goodnotesの書き込み](./images/001-01.webp)
-```
-
 front matter、ページタイトル、記録番号、日付、URLは書きません。
 
 ## 日々の更新手順
 
 1. ObsidianでMarkdownを書く
-2. 必要ならWebP画像を同じ記録フォルダの `images/` に入れる
-3. GitHub Desktopでcommitする
-4. pushする
+2. GitHub Desktopでcommitする
+3. pushする
 
 push後、GitHub Actionsが次の内容を自動生成してGitHub Pagesへ公開します。
 
@@ -56,13 +45,13 @@ push後、GitHub Actionsが次の内容を自動生成してGitHub Pagesへ公�
 
 ## 更新日
 
-各読書記録フォルダに対して、次のGit情報を取得します。
+各読書記録のMarkdownファイルに対して、次のGit情報を取得します。
 
 ```text
-git log -1 --format=%cI -- reading/saki-open-window/001
+git log -1 --format=%cI -- reading/saki-open-window/001.md
 ```
 
-そのため、Markdownだけでなく同じ記録フォルダ内の画像を変更した場合も更新日が変わります。GitHub Actionsでは `.github/workflows/pages.yml` のcheckoutに `fetch-depth: 0` を指定し、履歴を省略せずに取得します。
+GitHub Actionsでは `.github/workflows/pages.yml` のcheckoutに `fetch-depth: 0` を指定し、履歴を省略せずに取得します。
 
 Gitはpush日時を保存しないため、サイトに表示されるのは最新のcommit日時です。
 
@@ -70,7 +59,7 @@ Gitはpush日時を保存しないため、サイトに表示されるのは最�
 
 1. `works/<作品ID>/work.json` に作品情報を登録する
 2. `works/<作品ID>/guide.html` に固定作品ガイドを置く
-3. `reading/<作品ID>/001/001.md` から記録を始める
+3. `reading/<作品ID>/001.md` から記録を始める
 
 トップページ、作品一覧、件数、最終更新日、サイトマップを手作業で変更する必要はありません。読了時のみ `work.json` の `status` を `読書中` から `読了` へ変更します。
 
@@ -79,13 +68,9 @@ Gitはpush日時を保存しないため、サイトに表示されるのは最�
 サイト生成時には、次の不整合を検出すると公開を停止します。
 
 - 未登録の作品ID
-- 3桁でない記録フォルダ
-- フォルダ番号とMarkdownファイル名の不一致
-- 同じ記録フォルダ内に複数のMarkdownがある状態
+- 3桁の番号でないMarkdownファイル
 - front matterの混入
-- `images/` 外の画像参照
-- WebP以外の記録画像
-- 存在しない画像や内部リンク
+- 存在しない内部リンク
 
 ## ローカルで確認する場合
 

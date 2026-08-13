@@ -175,7 +175,10 @@ async function loadRecords(registeredWorks) {
 
   for (const entry of readingEntries.filter((item) => item.isDirectory())) {
     if (!workIds.has(entry.name)) {
-      throw new Error(`reading/${entry.name} に対応する作品情報が works/ にありません。`);
+      const contents = await readdir(path.join(readingDir, entry.name));
+      if (contents.some((name) => !name.startsWith("."))) {
+        throw new Error(`reading/${entry.name} に対応する作品情報が works/ にありません。`);
+      }
     }
   }
 
@@ -184,77 +187,38 @@ async function loadRecords(registeredWorks) {
     const workReadingDir = path.join(readingDir, work.id);
     if (!existsSync(workReadingDir)) continue;
 
-    const entries = await readdir(workReadingDir, { withFileTypes: true });
-    for (const entry of entries.filter((item) => item.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (!/^\d{3}$/.test(entry.name)) {
-        throw new Error(`reading/${work.id}/${entry.name} は3桁の番号フォルダではありません。`);
+    const entries = (await readdir(workReadingDir, { withFileTypes: true }))
+      .filter((item) => !item.name.startsWith("."))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
+      if (!entry.isFile() || !/^\d{3}\.md$/.test(entry.name)) {
+        throw new Error(`reading/${work.id}/${entry.name} は3桁の番号を付けたMarkdownファイルではありません。`);
       }
 
-      const recordDir = path.join(workReadingDir, entry.name);
-      const markdownFiles = (await readdir(recordDir, { withFileTypes: true }))
-        .filter((item) => item.isFile() && item.name.toLowerCase().endsWith(".md"))
-        .map((item) => item.name);
-      const expectedName = `${entry.name}.md`;
-      if (markdownFiles.length !== 1 || markdownFiles[0] !== expectedName) {
-        throw new Error(`reading/${work.id}/${entry.name}/ には ${expectedName} だけを置いてください。`);
-      }
-
-      const markdownPath = path.join(recordDir, expectedName);
+      const number = path.basename(entry.name, ".md");
+      const markdownPath = path.join(workReadingDir, entry.name);
       const source = await readFile(markdownPath, "utf8");
       if (/^---\s*$/m.test(source.split(/\r?\n/).slice(0, 2).join("\n"))) {
         throw new Error(`${path.relative(ROOT, markdownPath)} にfront matterは不要です。`);
       }
 
-      await validateRecordImages(source, recordDir, markdownPath);
       const cleanedSource = stripEmptyDefaultSections(source);
-      const updatedAt = gitLastCommit(path.relative(ROOT, recordDir));
+      const updatedAt = gitLastCommit(path.relative(ROOT, markdownPath));
       if (!updatedAt && process.env.GITHUB_ACTIONS === "true") {
-        throw new Error(`${path.relative(ROOT, recordDir)} のGit commit日時を取得できません。`);
+        throw new Error(`${path.relative(ROOT, markdownPath)} のGit commit日時を取得できません。`);
       }
 
       loaded.push({
         workId: work.id,
-        number: entry.name,
-        recordDir,
+        number,
         markdownPath,
         html: renderRecordMarkdown(cleanedSource),
         updatedAt,
-        title: `${work.recordTitlePrefix} ${entry.name}`,
+        title: `${work.recordTitlePrefix} ${number}`,
       });
     }
   }
   return loaded;
-}
-
-async function validateRecordImages(source, recordDir, markdownPath) {
-  const images = collectImageSources(markdown.parse(source, {}));
-  for (const sourcePath of images) {
-    if (/^(?:https?:|data:|\/)/i.test(sourcePath)) {
-      throw new Error(`${path.relative(ROOT, markdownPath)} の画像は記録フォルダ内の ./images/ を参照してください。`);
-    }
-
-    const cleanSource = decodeURIComponent(sourcePath.split(/[?#]/)[0]).replaceAll("/", path.sep);
-    if (!(cleanSource.startsWith(`.${path.sep}images${path.sep}`) || cleanSource.startsWith(`images${path.sep}`))) {
-      throw new Error(`${path.relative(ROOT, markdownPath)} の画像「${sourcePath}」は ./images/ 内に置いてください。`);
-    }
-    if (path.extname(cleanSource).toLowerCase() !== ".webp") {
-      throw new Error(`${path.relative(ROOT, markdownPath)} の画像「${sourcePath}」はWebP形式にしてください。`);
-    }
-
-    const absoluteImage = path.resolve(recordDir, cleanSource);
-    if (!absoluteImage.startsWith(`${path.resolve(recordDir)}${path.sep}`) || !existsSync(absoluteImage)) {
-      throw new Error(`${path.relative(ROOT, markdownPath)} が参照する画像「${sourcePath}」が見つかりません。`);
-    }
-  }
-}
-
-function collectImageSources(tokens) {
-  const sources = [];
-  for (const token of tokens) {
-    if (token.type === "image") sources.push(token.attrGet("src") ?? "");
-    if (token.children) sources.push(...collectImageSources(token.children));
-  }
-  return sources;
 }
 
 function stripEmptyDefaultSections(source) {
@@ -452,10 +416,6 @@ async function buildRecordPages(work) {
       content,
     }), record.updatedAt);
 
-    const imagesDir = path.join(record.recordDir, "images");
-    if (existsSync(imagesDir)) {
-      await cp(imagesDir, path.join(OUTPUT_DIR, route, "images"), { recursive: true });
-    }
   }
 }
 
