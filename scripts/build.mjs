@@ -284,11 +284,14 @@ function gitLastCommit(relativePath) {
 
 async function buildHome() {
   const currentWorks = publishedWorks.filter((work) => work.status === "読書中");
-  const recentRecords = [...publishedRecords]
-    .sort(compareRecordsByUpdate)
-    .slice(0, site.recentCount);
+  const orderedRecords = [...publishedRecords].sort(compareRecordsByUpdate);
+  const latestRecord = orderedRecords[0];
+  const recentRecords = orderedRecords.slice(0, site.recentCount);
 
   const homeContent = renderTemplate(templates.home, {
+    latestRecordLink: latestRecord
+      ? `<p class="latest-entry"><a href="reading/${encodeURIComponent(latestRecord.workId)}/${latestRecord.number}/">最新記事はこちら<span aria-hidden="true">→</span></a></p>`
+      : "",
     currentWorks: currentWorks.length > 0
       ? currentWorks.map((work, index) => renderWorkCard(work, index + 1, { detailed: true })).join("\n")
       : '<p class="empty-state">現在読んでいる作品はありません。</p>',

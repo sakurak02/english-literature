@@ -118,6 +118,45 @@ summary:focus-visible {
   line-height: 2.05;
 }
 
+.learning-note {
+  max-width: 680px;
+  margin: 24px auto 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+
+.learning-note p {
+  margin: 0;
+}
+
+.learning-note p + p {
+  margin-top: 3px;
+}
+
+.latest-entry {
+  margin: 0 0 22px;
+}
+
+.latest-entry a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 4px 1px 6px;
+  border-bottom: 1px solid var(--line);
+  color: var(--accent-dark);
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.latest-entry a:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
 .main-stack {
   display: grid;
   gap: clamp(64px, 10vw, 100px);
@@ -880,6 +919,29 @@ summary:focus-visible {
   .shell,
   .reading-shell {
     width: min(100% - 28px, 960px);
+  }
+
+  .site-hero {
+    padding-block: 42px 34px;
+  }
+
+  .site-hero::after {
+    margin-top: 26px;
+  }
+
+  .site-intro {
+    margin-top: 20px;
+    line-height: 1.9;
+  }
+
+  .learning-note {
+    margin-top: 18px;
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+
+  .latest-entry {
+    margin-bottom: 18px;
   }
 
   .section-heading--row,
