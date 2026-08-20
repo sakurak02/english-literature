@@ -117,6 +117,7 @@ async function loadWorks() {
   const worksDir = path.join(ROOT, "works");
   const entries = await readdir(worksDir, { withFileTypes: true });
   const loaded = [];
+  const cardNumbers = new Set();
 
   for (const entry of entries.filter((item) => item.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
     if (!/^[a-z0-9-]+$/.test(entry.name)) {
@@ -125,7 +126,7 @@ async function loadWorks() {
 
     const workDir = path.join(worksDir, entry.name);
     const data = await readJson(path.join(workDir, "work.json"));
-    const required = ["id", "title", "originalTitle", "author", "authorJa", "status", "recordTitlePrefix", "introduction", "gutenbergUrl"];
+    const required = ["id", "title", "originalTitle", "author", "authorJa", "status", "cardNumber", "recordTitlePrefix", "introduction", "gutenbergUrl"];
     for (const key of required) {
       if (!data[key] || typeof data[key] !== "string") {
         throw new Error(`works/${entry.name}/work.json の ${key} が未設定です。`);
@@ -137,6 +138,13 @@ async function loadWorks() {
     if (!["読書中", "読了"].includes(data.status)) {
       throw new Error(`作品「${data.title}」の status は「読書中」または「読了」にしてください。`);
     }
+    if (!/^\d{2}$/.test(data.cardNumber)) {
+      throw new Error(`作品「${data.title}」の cardNumber は2桁の数字にしてください。`);
+    }
+    if (cardNumbers.has(data.cardNumber)) {
+      throw new Error(`作品番号「${data.cardNumber}」が重複しています。`);
+    }
+    cardNumbers.add(data.cardNumber);
     if (data.published !== undefined && typeof data.published !== "boolean") {
       throw new Error(`作品「${data.title}」の published は true または false にしてください。`);
     }
@@ -293,11 +301,11 @@ async function buildHome() {
       ? `<p class="latest-entry"><a href="reading/${encodeURIComponent(latestRecord.workId)}/${latestRecord.number}/">最新記事はこちら<span aria-hidden="true">→</span></a></p>`
       : "",
     currentWorks: currentWorks.length > 0
-      ? currentWorks.map((work, index) => renderWorkCard(work, index + 1, { detailed: true })).join("\n")
+      ? currentWorks.map((work) => renderWorkCard(work, { detailed: true })).join("\n")
       : '<p class="empty-state">現在読んでいる作品はありません。</p>',
     recentCount: String(site.recentCount),
     recentRecords: renderRecordList(recentRecords, { includeWork: true, fromRoot: true }),
-    allWorks: publishedWorks.map((work, index) => renderWorkCard(work, index + 1)).join("\n"),
+    allWorks: publishedWorks.map((work) => renderWorkCard(work)).join("\n"),
     footer: renderFooter(),
   });
   const latestContentDate = newestDate([
@@ -314,12 +322,12 @@ async function buildHome() {
   }), latestContentDate);
 }
 
-function renderWorkCard(work, index, { detailed = false } = {}) {
+function renderWorkCard(work, { detailed = false } = {}) {
   const details = detailed
     ? `${work.collection ? `<p class="work-card__collection"><span>収録</span>${escapeHtml(work.collection)}</p>` : ""}<p class="work-card__introduction">${escapeHtml(work.introduction)}</p>`
     : "";
   return `<article class="work-card">
-  <div class="work-card__topline"><span class="status-badge">${escapeHtml(work.status)}</span><span class="work-card__number">${String(index).padStart(2, "0")}</span></div>
+  <div class="work-card__topline"><span class="status-badge">${escapeHtml(work.status)}</span><span class="work-card__number">${escapeHtml(work.cardNumber)}</span></div>
   <h3>${escapeHtml(work.title)}</h3>
   <p class="work-card__original">${escapeHtml(work.originalTitle)}</p>
   <p class="work-card__author">${escapeHtml(work.byline)}</p>
