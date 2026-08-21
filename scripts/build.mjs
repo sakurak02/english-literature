@@ -104,9 +104,6 @@ function validateSiteConfig(config) {
       throw new Error(`site.config.json の ${key} が未設定です。`);
     }
   }
-  if (!Number.isInteger(config.recentCount) || config.recentCount < 1) {
-    throw new Error("site.config.json の recentCount は1以上の整数にしてください。");
-  }
   if (!config.siteUrl.endsWith("/")) {
     throw new Error("site.config.json の siteUrl は / で終わるURLにしてください。");
   }
@@ -292,9 +289,7 @@ function gitLastCommit(relativePath) {
 
 async function buildHome() {
   const currentWorks = publishedWorks.filter((work) => work.status === "読書中");
-  const orderedRecords = [...publishedRecords].sort(compareRecordsByUpdate);
-  const latestRecord = orderedRecords[0];
-  const recentRecords = orderedRecords.slice(0, site.recentCount);
+  const latestRecord = [...publishedRecords].sort(compareRecordsByUpdate)[0];
 
   const homeContent = renderTemplate(templates.home, {
     latestRecordLink: latestRecord
@@ -303,8 +298,6 @@ async function buildHome() {
     currentWorks: currentWorks.length > 0
       ? currentWorks.map((work) => renderWorkCard(work, { detailed: true })).join("\n")
       : '<p class="empty-state">現在読んでいる作品はありません。</p>',
-    recentCount: String(site.recentCount),
-    recentRecords: renderRecordList(recentRecords, { includeWork: true, fromRoot: true }),
     allWorks: publishedWorks.map((work) => renderWorkCard(work)).join("\n"),
     footer: renderFooter(),
   });
